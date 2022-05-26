@@ -156,7 +156,18 @@ def flatten(lst: List[List[Any]]) -> List[Any]:
 
 
 def elapsed(start_time: float) -> str:
-    duration = time() - start_time
+    return format_duration_secs(time() - start_time)
+
+
+def remaining(start_time: float, done_tasks: int, total_tasks: int) -> str:
+    return format_duration_secs(
+        (time() - start_time) * (total_tasks - done_tasks) / done_tasks
+    )
+
+
+def format_duration_secs(duration: float) -> str:
+    if not duration > 0:
+        return '0s'
     hour = int(duration / 3600)
     if hour > 0:
         h = f'{hour}h'

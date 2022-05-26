@@ -13,7 +13,7 @@ from requests.exceptions import RequestException
 from area import read_an_area
 from route import Route
 from text_analyzer import SMALL, TextAnalyzer
-from utils import elapsed, MP_WEBSITE, STATES
+from utils import elapsed, MP_WEBSITE, remaining, STATES
 
 MAX_RETRY = 3
 NUM_OF_THREADS = 100
@@ -94,10 +94,9 @@ else:
             kill_thread = True
             sys.exit(1)
         to_read = to_read[CHUNK:] + new_to_read
-        duration = time() - read_start_time
         print(
-            f'Done in {duration:.1f} seconds. {len(new_to_read)} new areas '
-            f'added to area queue. Elapsed {elapsed(start_time)}'
+            f'Done in {elapsed(read_start_time)}. {len(new_to_read)} new '
+            f'areas added to area queue. Elapsed {elapsed(start_time)}'
         )
     areas_df = pd.DataFrame(list(areas.values())).reset_index(drop=True)
     areas_df.to_pickle(areas_file)
@@ -165,8 +164,14 @@ if start_idx < len(routes):
         except KeyboardInterrupt:
             kill_thread = True
             sys.exit(1)
-        duration = time() - read_start_time
-        print(f'Done in {duration:.1f} seconds. Elapsed {elapsed(start_time)}')
+        dur = elapsed(read_start_time)
+        ela = elapsed(start_time)
+        rem = remaining(
+            start_time=start_time,
+            done_tasks=min(j + CHUNK, len(routes)) - start_idx,
+            total_tasks=len(routes) - start_idx,
+        )
+        print(f'Done in {dur}. Elapsed {ela}. Remaining {rem}')
         df = pd.DataFrame(route_details).reset_index(drop=True)
         df.to_pickle(route_details_file)
 
