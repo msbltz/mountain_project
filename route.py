@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 import re
-from typing import Dict, List, Union
+from typing import Any, Dict, List, Union
 
 import requests
 
@@ -29,7 +29,8 @@ class Route:
         'regard', 'responsible', 'rh', 'rhs', 'rock', 'rope', 'route', 'same',
         'section', 'self', 'set', 'source', 'story', 'stuff', 'sure', 'team',
         'thank', 'thing', 'time', 'today', 'tomorrow', 'top', 'up', 'us',
-        'useful', 'wall', 'way', 'well', 'worth', 'year', 'yesterday',
+        'useful', 'w/', 'w/o', 'wall', 'way', 'well', 'worth', 'year',
+        'yesterday',
     }
     TYPES = {
         'Sport', 'Trad', 'Aid', 'TR', 'Boulder', 'Alpine', 'Ice', 'Snow',
@@ -41,6 +42,7 @@ class Route:
         location_chain: List[str], grade: List[str], types: List[str],
         height: int, pitches: int, commitment: str, scores: Dict[int, int],
         comments: List[str], descriptions: List[str], keywords: List[str],
+        keyword_counts: List[Union[str, int]],
     ) -> None:
         self.id = route_id
         self.name = route_name
@@ -55,8 +57,9 @@ class Route:
         self.comments = comments
         self.descriptions = descriptions
         self.keywords = keywords
+        self.keyword_counts = keyword_counts
     
-    def to_map(self) -> Dict[str, Union[str, List[str], int, float]]:
+    def to_map(self) -> Dict[str, Any]:
         return {
             'id': self.id,
             'name': self.name,
@@ -75,6 +78,7 @@ class Route:
             'avg_score': self.avg_score(),
             'votes': self.votes(),
             'keywords': self.keywords,
+            'keyword_counts': self.keyword_counts,
         }
     
     @classmethod
@@ -180,9 +184,11 @@ class Route:
         )
         comments = dedupe(flatten([clean_text(c) for c in comments_read]))
         
-        keywords = []
+        keywords, keyword_counts = [], []
         if text_analyzer is not None:
-            keywords = text_analyzer.generate_keywords(comments + descriptions)
+            keywords, counts = (
+                text_analyzer.generate_keywords(comments + descriptions)
+            )
             own_name = ' '.join(route_name.split('-'))
             keywords = [
                 p for p in keywords
@@ -191,12 +197,14 @@ class Route:
                     and p not in own_name
                     and len(p) > 1
                 )
-            ][:cls.TOP_KEYWORDS]
+            ]
+            keyword_counts = flatten([[p, counts[p]] for p in keywords])
+            keywords = keywords[:cls.TOP_KEYWORDS]
         
         return cls(
             route_id, route_name, display_name, location_chain, grade, types,
             height, pitches, commitment, scores, comments, descriptions,
-            keywords,
+            keywords, keyword_counts,
         )
     
     def votes(self) -> int:

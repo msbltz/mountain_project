@@ -155,6 +155,34 @@ def flatten(lst: List[List[Any]]) -> List[Any]:
     return [x for s in lst for x in s]
 
 
+def join_around(
+    words: List[str], w: str, to_left: bool = True, to_right: bool = True,
+) -> List[str]:
+    """
+    Join a list of words around a certain word w. For example:
+    join_around(['a', 'b', '/', 'c', 'd'], '/') == ['a', 'b/c', 'd'].
+    join_around(['a', 'b', '/', 'c', 'd'], '/', to_left=False)
+        == ['a', 'b', '/c', 'd'].
+    join_around(['a', 'b', '/', 'c', 'd'], '/', to_right=False)
+        == ['a', 'b/', 'c', 'd'].
+    """
+    if not (to_left or to_right):
+        return words
+    res = []
+    curr, joining = '', False
+    for x in words:
+        if (x == w and to_left) or (joining and to_right):
+            curr += x
+        else:
+            if curr:
+                res.append(curr)
+            curr = x
+        joining = (x == w)
+    if curr:
+        res.append(curr)
+    return res
+
+
 def elapsed(start_time: float) -> str:
     return format_duration_secs(time() - start_time)
 
