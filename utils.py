@@ -136,16 +136,13 @@ def dedupe(lst: List[str]) -> List[str]:
     Return strings in a list which are not substrings of any other string in
     the list.
     """
-    s = list(set(lst))
     idx = set()
-    for i, x in enumerate(s):
-        for j, y in enumerate(s):
-            if i == j:
-                continue
-            if x in y:
+    for i, x in enumerate(lst):
+        for j, y in enumerate(lst):
+            if (x == y and i < j) or (x != y and x in y):
                 idx.add(i)
                 break
-    return [x for i, x in enumerate(s) if i not in idx]
+    return [x for i, x in enumerate(lst) if i not in idx]
 
 
 def flatten(lst: List[List[Any]]) -> List[Any]:

@@ -6,7 +6,7 @@ from typing import Dict, List, Tuple
 import spacy
 from spacy.lookups import load_lookups
 
-from utils import dedupe, join_around
+from utils import join_around
 
 SMALL = 'en_core_web_sm'
 MEDIUM = 'en_core_web_md'
@@ -38,7 +38,7 @@ class TextAnalyzer:
                 # Construct a phrase from words.
                 if (
                     next_lemma in {'/'}
-                    or pos in {'ADJ', 'PROPN', 'NOUN', 'NUM', 'SYM', 'X'}
+                    or pos in {'ADJ', 'NOUN', 'NUM', 'PROPN', 'SYM', 'X'}
                     or dep in {'amod', 'neg', 'nmod', 'nummod'}
                 ):
                     phrase_tokens.append((lemma, pos, dep))
@@ -55,8 +55,7 @@ class TextAnalyzer:
                 phrase_tokens = []
             self.count_phrase(phrase_tokens, counts)
         counts = {p: ct for p, ct in counts.items() if ct > 1}
-        keywords = dedupe(list(counts.keys()))
-        counts = {p: ct for p, ct in counts.items() if p in keywords}
+        keywords = list(counts.keys())
         keywords.sort(
             key=lambda p: (counts[p], -self.phrase_prob(p)),
             reverse=True,

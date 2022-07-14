@@ -29,7 +29,7 @@ class Route:
         'regard', 'responsible', 'rh', 'rhs', 'rock', 'rope', 'route', 'same',
         'section', 'self', 'set', 'source', 'story', 'stuff', 'sure', 'team',
         'thank', 'thing', 'time', 'today', 'tomorrow', 'top', 'up', 'us',
-        'useful', 'w/', 'w/o', 'wall', 'way', 'well', 'worth', 'year',
+        'useful', 'user', 'w/', 'w/o', 'wall', 'way', 'well', 'worth', 'year',
         'yesterday',
     }
     TYPES = {
@@ -157,9 +157,9 @@ class Route:
         descriptions_read = re.findall(
             r'</h2>\\n\s*?<div class="fr-view">(.*?)</div>\\n', html,
         )
-        descriptions = dedupe(flatten(
-            [clean_text(d) for d in descriptions_read]
-        ))
+        descriptions = dedupe(
+            flatten([clean_text(d) for d in descriptions_read])
+        )
         
         stats_link = f'{MP_WEBSITE}/route/stats/{route_id}/{route_name}'
         response = requests.get(stats_link)
@@ -186,21 +186,26 @@ class Route:
         
         keywords, keyword_counts = [], []
         if text_analyzer is not None:
-            keywords, counts = (
+            raw_keywords, counts = (
                 text_analyzer.generate_keywords(comments + descriptions)
             )
             own_name = ' '.join(route_name.split('-'))
-            keywords = [
-                p for p in keywords
+            raw_keywords = [
+                p for p in raw_keywords
                 if (
                     p not in cls.TRIVIAL_WORDS
                     and p not in own_name
                     and len(p) > 1
                 )
             ]
-            keyword_counts = flatten([[p, counts[p]] for p in keywords])
-            keywords = keywords[:cls.TOP_KEYWORDS]
-        
+            keyword_counts = flatten([[p, counts[p]] for p in raw_keywords])
+            for word in raw_keywords:
+                if any([(word in w) for w in keywords]):
+                    continue
+                keywords.append(word)
+                if len(keywords) == cls.TOP_KEYWORDS:
+                    break
+
         return cls(
             route_id, route_name, display_name, location_chain, grade, types,
             height, pitches, commitment, scores, comments, descriptions,
