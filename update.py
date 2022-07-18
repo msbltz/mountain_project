@@ -13,7 +13,7 @@ from requests.exceptions import RequestException
 from area import read_an_area
 from route import Route
 from text_analyzer import SMALL, TextAnalyzer
-from utils import elapsed, MP_WEBSITE, remaining, STATES
+from utils import elapsed, remaining, STATES
 
 MAX_RETRY = 3
 NUM_OF_THREADS = 100
@@ -132,6 +132,10 @@ if start_idx < len(routes):
                         route_id=task['route_id'],
                         route_name=task['route_name'],
                         location_chain=task['location_chain'],
+                        location_name_chain=[
+                            areas.get(a, dict()).get('area_name', '')
+                            for a in task['location_chain']
+                        ],
                         text_analyzer=TEXT_ANALYZER,
                     )
                     route_details.append(route.to_map())
@@ -195,13 +199,15 @@ print(f'Total {len(df)} good routes found')
 output_df = pd.DataFrame()
 output_df['name'] = df['display_name']
 output_df['location'] = df['location_chain'].map(
-    lambda c: ' > '.join([areas.get(a)['display_name'] for a in c])
+    lambda c: ' > '.join(
+        [areas.get(a, dict()).get('display_name', '') for a in c]
+    )
 )
 output_df['latitude'] = df['location_chain'].map(
-    lambda c: areas.get(c[-1])['latitude']
+    lambda c: areas.get(c[-1], dict()).get('latitude', '')
 )
 output_df['longitude'] = df['location_chain'].map(
-    lambda c: areas.get(c[-1])['longitude']
+    lambda c: areas.get(c[-1], dict()).get('longitude', '')
 )
 output_df['score'] = df['avg_score']
 output_df['votes'] = df['votes']
@@ -210,13 +216,9 @@ output_df['grade'] = df['grade'].map(lambda g: ' / '.join(g))
 output_df['height'] = df['height'].map(lambda h: str(h) if h > 0 else '')
 output_df['pitches'] = df['pitches'].map(lambda p: str(p) if p > 1 else '')
 output_df['keywords'] = df['keywords'].map(lambda k: ' | '.join(k))
-output_df['link'] = df.apply(
-    lambda row: f"{MP_WEBSITE}/route/{row['id']}/{row['name']}", axis=1,
-)
-output_df.sort_values(
-    by=['score', 'votes', 'name'],
-    ascending=[False, False, True],
-    inplace=True,
+output_df['link'] = df['link']
+output_df = output_df.sort_values(
+    by=['score', 'votes', 'name'], ascending=[False, False, True],
 )
 
 boulder_df = output_df[
