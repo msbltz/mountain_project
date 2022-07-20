@@ -30,6 +30,35 @@ STATES = [
     '105881369/canada', '105910759/mexico',
 ]
 
+TRIVIAL_KEYWORDS = {
+    '1st', '2nd', '3rd', '4th', '5th', 'able', 'anchor', 'appropriate', 'area',
+    'ascent', 'available', 'back', 'backside', 'bad', 'base', 'belay',
+    'belayer', 'big', 'bit', 'bolt', 'book', 'boulder', 'buddy', 'car',
+    'center', 'class', 'climb', 'climber', "climber 's", 'climbing', 'comment',
+    'couple', 'crag', 'credit', 'day', 'de', 'de la', 'description',
+    'different', 'double', 'du', 'east', 'end', 'enough', 'et', 'experience',
+    'fa', 'fact', 'few', 'ffa', 'fifth', 'fine', 'first', 'five', 'folk',
+    'foot', 'four', 'fourth', 'front', 'ft', 'full', 'girl', 'good', 'great',
+    'ground', 'guy', 'half', 'hand', 'hand side', 'head', 'help', 'hold',
+    'hour', 'idea', 'imho', 'in', 'inch', 'info', 'ish', 'issue', 'key', 'l.',
+    'la', 'large', 'last', 'le', 'least', 'left', 'less', 'lh', 'lhs', 'line',
+    'little', 'lol', 'lot', 'm rope', 'm.', 'main', 'man', 'many', 'medium',
+    'meter', 'meter rope', 'method', 'mid', 'middle', 'mile', 'mini', 'minute',
+    'more', 'most', 'move', 'much', 'name', 'new', 'next', 'nice', 'no',
+    'north', 'not sure', 'number', 'old', 'one', 'only', 'open', 'opinion',
+    'option', 'other', 'out', 'own', 'page', 'pair', 'part', 'partner',
+    'party', 'path', 'people', 'percentage', 'piece', 'pitch', 'pitch #',
+    'place', 'plenty', 'point', 'portion', 'possible', 'pour', 'problem', 'r.',
+    'range', 'real', 'reason', 'regard', 'responsible', 'rh', 'rhs', 'right',
+    'rock', 'rope', 'route', 'run', 'same', 'second', 'section', 'sector',
+    'self', 'series', 'set', 'several', 'side', 'single', 'size', 'sized',
+    'small', 'source', 'south', 'star', 'start', 'story', 'stuff', 'sur',
+    'sure', 'system', 'team', 'thank', 'thing', 'third', 'three', 'tier',
+    'time', 'today', 'tomorrow', 'top', 'two', 'un', 'une', 'up', 'us',
+    'useful', 'user', 'voie', 'w/', 'w/o', 'wall', 'way', 'well', 'west',
+    'whole', 'work', 'worth', 'year', 'yesterday',
+}
+
 SPECIAL_CHARS = {
     '\\xc2\\x92': '',
     '\\xc2\\x93': '',

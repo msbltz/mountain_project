@@ -19,6 +19,7 @@ ENDC = '\033[0m'
 
 CENTER_POS = {'ADJ', 'NOUN', 'NUM', 'PROPN', 'SYM', 'X'}
 DECORATOR_STOP_POS = {'ADP', 'ADV', 'DET', 'PRON', 'PUNCT', 'SCONJ', 'VERB'}
+PHRASE_ENDS_BAD_POS = {'CCONJ'}
 
 
 class TextAnalyzer:
@@ -43,7 +44,10 @@ class TextAnalyzer:
                     phrases = sentence.extract_phrases()
                     if print_details:
                         sentence.print_parallel()
-                        print([phrase.to_string() for phrase in phrases])
+                        print(
+                            f'phrases = '
+                            f'{[phrase.to_string() for phrase in phrases]}'
+                        )
                         print('')
                     for phrase in phrases:
                         ps = phrase.to_string()
@@ -97,11 +101,10 @@ class Sentence:
                 and t1.lemma_ in {'%', '+'} and t1.pos_ == 'NOUN'
             ):
                 idx += self.merge_tokens(mp, rd, [token, t1], 0, 1)
-            # Combine NUM + 'm'(NOUN).
+            # Combine NUM + 'm'.
             elif (
                 token.pos_ == 'NUM'
-                and t1 is not None
-                and t1.lemma_.lower() == 'm' and t1.pos_ == 'NOUN'
+                and t1 is not None and t1.lemma_.lower() == 'm'
             ):
                 idx += self.merge_tokens(mp, rd, [token, t1], 1, 1)
             # Combine * + '/' + * + '/' + * + ...
@@ -181,7 +184,14 @@ class Sentence:
                     if phrase.to_string() not in seen:
                         phrases.append(phrase)
                         seen.add(phrase.to_string())
-                res.extend(phrases)
+                res.extend([
+                    phrase
+                    for phrase in phrases
+                    if not (
+                        phrase.first_pos() in PHRASE_ENDS_BAD_POS
+                        or phrase.last_pos() in PHRASE_ENDS_BAD_POS
+                    )
+                ])
         return res
 
     def print_parallel(self, max_line_len: int = 160) -> None:
@@ -227,15 +237,18 @@ class Sentence:
 
 
 class Phrase:
-    def __init__(self, words: List[str], weight: int):
+    def __init__(self, words: List[str], poss: List[str], weight: int):
         self.words = words
+        self.poss = poss
         self.weight = weight
 
     def add(self, other: Phrase, to_end: bool) -> None:
         if to_end:
             self.words = self.words + other.words
+            self.poss = self.poss + other.poss
         else:
             self.words = other.words + self.words
+            self.poss = other.poss + self.poss
         self.weight += other.weight
 
     @classmethod
@@ -246,6 +259,12 @@ class Phrase:
 
     def to_string(self, sep: str = ' ') -> str:
         return sep.join(self.words)
+
+    def first_pos(self) -> str:
+        return self.poss[0]
+
+    def last_pos(self) -> str:
+        return self.poss[-1]
 
     def get_weight(self) -> int:
         return self.weight
@@ -265,7 +284,7 @@ class Word:
         self.right_phrases = None  # List[Phrase]
 
     def to_phrase(self) -> Phrase:
-        return Phrase([self.word], self.weight)
+        return Phrase([self.word], [self.pos], self.weight)
 
     def compute_center_phrase(self) -> None:
         self.center_phrase = self.to_phrase()

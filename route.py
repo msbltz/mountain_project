@@ -14,29 +14,12 @@ import requests
 from text_analyzer import SMALL, TextAnalyzer
 from utils import (
     clean_text, dedupe, flatten, MP_WEBSITE, replace_special_chars,
+    TRIVIAL_KEYWORDS,
 )
 
 
 class Route:
     TOP_KEYWORDS = 10
-    TRIVIAL_WORDS = {
-        '1st', '2nd', 'able', 'anchor', 'area', 'ascent', 'available', 'base',
-        'belay', 'belayer', 'big', 'bit', 'book', 'boulder', 'buddy', 'car',
-        'climb', 'climber', 'climbing', 'credit', 'day', 'description', 'end',
-        'enough', 'experience', 'fa', 'fact', 'few', 'ffa', 'first', 'folk',
-        'foot', 'girl', 'good', 'ground', 'guy', 'hand', 'head', 'help',
-        'hold', 'idea', 'imho', 'in', 'ish', 'issue', 'key', 'l.', 'large',
-        'least', 'left', 'lh', 'lhs', 'line', 'lol', 'lot', 'method', 'middle',
-        'more', 'most', 'move', 'name', 'no', 'number', 'one', 'open',
-        'opinion', 'option', 'other', 'out', 'own', 'partner', 'people',
-        'percentage', 'pitch', 'pitch #', 'place', 'point', 'possible',
-        'problem', 'r.', 'reason', 'regard', 'responsible', 'rh', 'rhs',
-        'right', 'rock', 'rope', 'route', 'same', 'second', 'section', 'self',
-        'set', 'side', 'small', 'source', 'story', 'stuff', 'sure', 'team',
-        'thank', 'thing', 'three', 'time', 'today', 'tomorrow', 'top', 'two',
-        'up', 'us', 'useful', 'user', 'w/', 'w/o', 'wall', 'way', 'well',
-        'worth', 'year', 'yesterday',
-    }
     TYPES = {
         'Sport', 'Trad', 'Aid', 'TR', 'Boulder', 'Alpine', 'Ice', 'Snow',
         'Mixed',
@@ -239,11 +222,12 @@ class Route:
             ]
             raw_keywords = [
                 p for p in raw_keywords
-                if (
-                    p not in cls.TRIVIAL_WORDS
-                    and p not in own_name
-                    and not any([(p in name) for name in location_names])
-                    and len(p) > 1
+                if not (
+                    p in TRIVIAL_KEYWORDS
+                    or p in own_name
+                    or any([(p in name) for name in location_names])
+                    or len(p) == 1
+                    or p.isnumeric()
                 )
             ]
             keyword_counts = flatten([[p, counts[p]] for p in raw_keywords])
